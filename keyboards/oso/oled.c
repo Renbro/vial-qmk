@@ -26,66 +26,67 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     return is_keyboard_left() ? OLED_ROTATION_270 : OLED_ROTATION_90;
 }
 
+/* Five glyphs fill the panel. A normal line-feed then inserts a blank row. */
+static void write_row(uint8_t row, const char *text) {
+    char line[6] = "     ";
+    for (uint8_t i = 0; i < 5 && text[i] != '\0'; i++) {
+        line[i] = text[i];
+    }
+    oled_set_cursor(0, row);
+    oled_write(line, false);
+}
+
 bool oled_task_user(void) {
     draw_oso();
-    oled_set_cursor(0, 5);
 
+    uint8_t row = 5;
     switch (get_highest_layer(layer_state)) {
         case 0:
-            oled_write_ln_P(PSTR("base"), false);
+            write_row(row, "");
             break;
         case 1:
-            oled_write_ln_P(PSTR("num"), false);
+            write_row(row, "num");
             break;
         case 2:
-            oled_write_ln_P(PSTR("sym"), false);
+            write_row(row, "sym");
             break;
         case 15:
-            oled_write_ln_P(PSTR("sys"), false);
+            write_row(row, "sys");
             break;
         default: {
             char layer_name[6];
             snprintf(layer_name, sizeof(layer_name), "L%d", get_highest_layer(layer_state));
-            oled_write_ln(layer_name, false);
+            write_row(row, layer_name);
             break;
         }
     }
 
-    oled_write_ln_P(PSTR(""), false);
+    write_row(++row, "");
 
-    uint8_t mods  = get_mods() | get_weak_mods() | get_oneshot_mods();
-    led_t   leds  = host_keyboard_led_state();
-    uint8_t shown = 0;
+    uint8_t mods = get_mods() | get_weak_mods() | get_oneshot_mods();
+    led_t   leds = host_keyboard_led_state();
 
     if (leds.caps_lock) {
-        oled_write_ln_P(PSTR("caps"), false);
-        shown++;
+        write_row(++row, "caps");
     }
     if (leds.scroll_lock) {
-        oled_write_ln_P(PSTR("scrl"), false);
-        shown++;
+        write_row(++row, "scrl");
     }
     if (mods & MOD_MASK_SHIFT) {
-        oled_write_ln_P(PSTR("shift"), false);
-        shown++;
+        write_row(++row, "shift");
     }
     if (mods & MOD_MASK_CTRL) {
-        oled_write_ln_P(PSTR("ctrl"), false);
-        shown++;
+        write_row(++row, "ctrl");
     }
     if (mods & MOD_MASK_ALT) {
-        oled_write_ln_P(PSTR("alt"), false);
-        shown++;
+        write_row(++row, "alt");
     }
     if (mods & MOD_MASK_GUI) {
-        oled_write_ln_P(PSTR("gui"), false);
-        shown++;
+        write_row(++row, "gui");
     }
 
-    /* Blank the slots that just turned off, so the old names do not stay. */
-    while (shown < 6) {
-        oled_write_ln_P(PSTR(""), false);
-        shown++;
+    while (row < 15) {
+        write_row(++row, "");
     }
 
     return false;
