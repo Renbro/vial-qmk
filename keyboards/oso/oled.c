@@ -21,10 +21,6 @@ static void draw_oso(void) {
     }
 }
 
-static void status_line(const char *label, bool on) {
-    oled_write_ln_P(label, on);
-}
-
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
     /* The 128x32 panel is mounted on its long edge, pins toward the bottom. */
     return is_keyboard_left() ? OLED_ROTATION_270 : OLED_ROTATION_90;
@@ -55,15 +51,42 @@ bool oled_task_user(void) {
         }
     }
 
-    uint8_t mods = get_mods() | get_weak_mods() | get_oneshot_mods();
-    led_t   leds = host_keyboard_led_state();
+    oled_write_ln_P(PSTR(""), false);
 
-    status_line(PSTR("caps"), leds.caps_lock);
-    status_line(PSTR("scrl"), leds.scroll_lock);
-    status_line(PSTR("shift"), (mods & MOD_MASK_SHIFT) != 0);
-    status_line(PSTR("ctrl"), (mods & MOD_MASK_CTRL) != 0);
-    status_line(PSTR("alt"), (mods & MOD_MASK_ALT) != 0);
-    status_line(PSTR("gui"), (mods & MOD_MASK_GUI) != 0);
+    uint8_t mods  = get_mods() | get_weak_mods() | get_oneshot_mods();
+    led_t   leds  = host_keyboard_led_state();
+    uint8_t shown = 0;
+
+    if (leds.caps_lock) {
+        oled_write_ln_P(PSTR("caps"), false);
+        shown++;
+    }
+    if (leds.scroll_lock) {
+        oled_write_ln_P(PSTR("scrl"), false);
+        shown++;
+    }
+    if (mods & MOD_MASK_SHIFT) {
+        oled_write_ln_P(PSTR("shift"), false);
+        shown++;
+    }
+    if (mods & MOD_MASK_CTRL) {
+        oled_write_ln_P(PSTR("ctrl"), false);
+        shown++;
+    }
+    if (mods & MOD_MASK_ALT) {
+        oled_write_ln_P(PSTR("alt"), false);
+        shown++;
+    }
+    if (mods & MOD_MASK_GUI) {
+        oled_write_ln_P(PSTR("gui"), false);
+        shown++;
+    }
+
+    /* Blank the slots that just turned off, so the old names do not stay. */
+    while (shown < 6) {
+        oled_write_ln_P(PSTR(""), false);
+        shown++;
+    }
 
     return false;
 }
