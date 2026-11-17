@@ -30,7 +30,8 @@
 #define I2C1_SDA_PIN GP2
 #define I2C1_SCL_PIN GP3
 #define OLED_DISPLAY_128X32
-#define OLED_TIMEOUT 0
+/* Blank the panel after 15 minutes with no keypress. A key turns it back on. */
+#define OLED_TIMEOUT 900000
 
 #define SPLIT_LAYER_STATE_ENABLE
 #define SPLIT_LED_STATE_ENABLE
