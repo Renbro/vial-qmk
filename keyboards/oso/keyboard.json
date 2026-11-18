@@ -1,7 +1,7 @@
 {
     "keyboard_name": "Oso",
-    "manufacturer": "Oso",
-    "maintainer": "oso",
+    "manufacturer": "Renbro",
+    "maintainer": "Renbro",
     "url": "",
     "development_board": "kb2040",
     "processor": "RP2040",
@@ -31,7 +31,7 @@
     "usb": {
         "vid": "0xFEED",
         "pid": "0x6F73",
-        "device_version": "0.0.1"
+        "device_version": "1.0.1"
     },
     "layouts": {
         "LAYOUT": {
@@ -629,7 +629,7 @@
                 {
                     "matrix": [
                         10,
-                        1
+                        4
                     ],
                     "x": 15.73,
                     "y": 4.4
@@ -645,7 +645,7 @@
                 {
                     "matrix": [
                         10,
-                        4
+                        1
                     ],
                     "x": 13.61,
                     "y": 4.4

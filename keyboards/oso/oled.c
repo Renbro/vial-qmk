@@ -22,8 +22,11 @@ static void draw_oso(void) {
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-    /* The 128x32 panel is mounted on its long edge, pins toward the bottom. */
-    return is_keyboard_left() ? OLED_ROTATION_270 : OLED_ROTATION_90;
+    /*
+     * Both headers sit with the pins toward the bottom of the board.
+     * The right board is a mirror, but the display is not turned around.
+     */
+    return OLED_ROTATION_270;
 }
 
 /* Five glyphs fill the panel. A normal line-feed then inserts a blank row. */
