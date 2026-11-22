@@ -30,8 +30,15 @@
 #define I2C1_SDA_PIN GP2
 #define I2C1_SCL_PIN GP3
 #define OLED_DISPLAY_128X32
-/* Blank the panel after 15 minutes with no keypress. A key turns it back on. */
-#define OLED_TIMEOUT 900000
+
+/*
+ * The RP2040 has no VBUS pin here, so each half waits up to 2 s at power-up
+ * for USB to enumerate. When the PC is still booting, or a hub is slow, the
+ * half on USB gives up and thinks it is the slave, and nothing works until
+ * reset. With the watchdog, a half that hears no master reboots itself and
+ * tries again.
+ */
+#define SPLIT_WATCHDOG_ENABLE
 
 #define SPLIT_LAYER_STATE_ENABLE
 #define SPLIT_LED_STATE_ENABLE
