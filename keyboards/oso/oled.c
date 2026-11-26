@@ -1,4 +1,5 @@
 #include QMK_KEYBOARD_H
+#include "split_util.h"
 
 /*
  * 32x32 trace of the Oso mark. Bit 31 is the left pixel.
@@ -142,10 +143,26 @@ static void draw_tall_row(uint8_t y0, const char *text) {
     }
 }
 
+/*
+ * A half without USB waits for the master. The split watchdog reboots it
+ * about every 2 s until the master is heard, so a dead TRRS link would keep
+ * it on the splash. Give a normal start this long, then say there is no link.
+ */
+#define NO_LINK_GRACE 1000
+
 bool oled_task_user(void) {
     static uint32_t splash_start;
     static bool     splash_ready = false;
     static bool     splash_done  = false;
+    if (!is_keyboard_master() && !split_watchdog_check()) {
+        /* Same rows as the splash, which overwrites them once linked. */
+        bool late = timer_read32() > NO_LINK_GRACE;
+        draw_tall_row(48, late ? "no" : "");
+        draw_tall_row(48 + TALL_ROW_HEIGHT, late ? "link" : "");
+        return false;
+    }
+    /* The splash starts on the master at power-up, on the other half once it
+     * hears the master. */
     if (!splash_ready) {
         splash_start = timer_read32();
         splash_ready = true;
@@ -196,8 +213,13 @@ bool oled_task_user(void) {
     uint8_t mods = get_mods() | get_weak_mods() | get_oneshot_mods();
     led_t   leds = host_keyboard_led_state();
 
-    const char *lines[6];
+    const char *lines[8];
     uint8_t     n = 0;
+    /* The master runs alone when the other half does not answer. */
+    if (is_keyboard_master() && !is_transport_connected()) {
+        lines[n++] = "no";
+        lines[n++] = "link";
+    }
     if (leds.caps_lock) lines[n++] = "caps";
     if (leds.scroll_lock) lines[n++] = "scrl";
     if (mods & MOD_MASK_SHIFT) lines[n++] = "shift";
